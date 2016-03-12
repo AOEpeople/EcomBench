@@ -1,0 +1,13 @@
+{
+  "require": {
+    "aoepeople/stackformation": "dev-blueprint",
+    "aoepeople/awsinspector": "dev-master"
+  },
+  "repositories": [
+    {"type": "vcs", "url": "https://github.com/AOEpeople/StackFormation.git"},
+    {"type": "vcs", "url": "https://github.com/AOEpeople/AwsInspector.git"}
+  ],
+  "autoload": {"psr-4": {"": "src"}},
+  "config": {"bin-dir": "bin"},
+  "bin": ["src/hurricane.php"]
+}
