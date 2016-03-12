@@ -1,0 +1,6 @@
+blueprints:
+
+  - stackname: setup
+    template: setup.template
+    parameters:
+      SSHLocation: '{env:SSHLocation}'

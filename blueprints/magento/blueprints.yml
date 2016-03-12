@@ -1,0 +1,14 @@
+blueprints:
+
+  - stackname: 'magento-1-9-run-{env:TEST_RUN}'
+    template: magento.template
+    parameters:
+      Platform: 'MagentoCe'
+      Version: '1.9.1.1'
+      Testrun: '{env:TEST_RUN}'
+      KeyPair: '{env:KeyPair}'
+      VPC: '{resource:setup:VPC}'
+      Subnet: '{resource:setup:Subnet}'
+      InstanceSg: '{resource:setup:InstanceSg}'
+      # This is Ubuntu 14.04 in us-west-1 (TODO: come up with mapping)
+      BootAmi: 'ami-06116566'

@@ -1,0 +1,85 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "EcomBench TestRun",
+  "Parameters": {
+
+    "KeyPair": {
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+
+    "VPC": {
+      "Type": "AWS::EC2::VPC::Id"
+    },
+
+    "Subnet": {
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+
+    "InstanceSg": {
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+
+    "BootAmi": {
+      "Type": "String"
+    },
+
+    "Platform": {
+      "Type": "String"
+    },
+
+    "Version": {
+      "Type": "String"
+    },
+
+    "Testrun": {
+      "Type": "String"
+    }
+
+  },
+
+  "Resources": {
+
+    "InstallationDoneHandle": { "Type": "AWS::CloudFormation::WaitConditionHandle" },
+    "InstallationDoneCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Properties": {
+        "Count": 1,
+        "Handle": {"Ref": "InstallationDoneHandle"},
+        "Timeout": 600
+      }
+    },
+
+    "Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {"Ref": "BootAmi"},
+        "InstanceType": "t2.medium",
+        "KeyName": {"Ref": "KeyPair"},
+        "InstanceInitiatedShutdownBehavior": "terminate",
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "True",
+            "DeleteOnTermination": "True",
+            "SubnetId": {"Ref": "Subnet"},
+            "DeviceIndex": "0",
+            "GroupSet": [{"Ref": "InstanceSg"}]
+          }
+        ],
+        "UserData": {"Fn::Base64": {"Fn::FileContent": "userdata/bootstrap.sh"}},
+        "Tags": [
+          {"Key": "Platform", "Value": { "Ref": "Platform" }},
+          {"Key": "Version", "Value": { "Ref": "Version" }},
+          {"Key": "Testrun", "Value": { "Ref": "Testrun" }}
+        ]
+      }
+    }
+  },
+
+  "Outputs" :{
+    "InstancePublicDnsName": {
+      "Description": "Instance PublicDnsName",
+      "Value": {"Fn::GetAtt": ["Instance", "PublicDnsName"]}
+    }
+  }
+
+}

@@ -1,0 +1,112 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Setup",
+
+  "Parameters": {
+    "SSHLocation": {
+      "Description": "The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    }
+  },
+
+  "Resources": {
+
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsHostnames": true
+      }
+    },
+
+    "Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {"Ref": "VPC"},
+        "CidrBlock": "10.0.0.0/24"
+      }
+    },
+
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway"
+    },
+
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {"Ref": "VPC"},
+        "InternetGatewayId": {"Ref": "InternetGateway"}
+      }
+    },
+
+    "RouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "VPC"}
+      }
+    },
+
+    "Route": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "AttachGateway",
+      "Properties": {
+        "RouteTableId": {"Ref": "RouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {"Ref": "InternetGateway"}
+      }
+    },
+
+    "SubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {"Ref": "Subnet"},
+        "RouteTableId": {"Ref": "RouteTable"}
+      }
+    },
+
+    "InstanceSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {"Ref": "VPC"},
+        "GroupDescription": "Enable SSH access via port 22 and public access to port 80",
+        "SecurityGroupIngress": [
+          {"IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": {"Ref": "SSHLocation"}},
+          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "ElasticSearch": {
+      "Type": "AWS::Elasticsearch::Domain",
+      "Properties": {
+        "AccessPolicies": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "AWS": "*" },
+            "Action": "es:*",
+            "Resource": "*"
+          }]
+        }
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "ElasticSearchArn": {
+      "Description": "ElasticSearch ARN",
+      "Value": {"Fn::GetAtt": ["ElasticSearch", "DomainArn"]}
+    },
+    "ElasticSearchEndpoint": {
+      "Description": "ElasticSearch Endpoint",
+      "Value": {"Fn::GetAtt": ["ElasticSearch", "DomainEndpoint"]}
+    }
+  }
+
+}
+
