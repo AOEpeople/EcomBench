@@ -30,6 +30,7 @@ php5enmod mcrypt
 a2enmod rewrite
 
 sed -i.bak 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+sed -i.bak 's/display_errors = Off/display_errors = On/g' /etc/php5/apache2/php.ini
 
 service apache2 restart
 wget https://files.magerun.net/n98-magerun.phar -O /usr/local/bin/n98-magerun
@@ -52,8 +53,8 @@ n98-magerun install \
     --magentoVersionByName="magento-mirror-1.9.2.3" \
     --installationFolder="."
 
-chmod -R ug+rw /var/www/html
-chown -R www-data:www-data /var/www/html
+chmod -R ug+rw /var/www/
+chown -R www-data:www-data /var/www/
 
 sudo -u www-data n98-magerun sys:url:list --add-categories 1 '{path}' > categories.csv
 sudo -u www-data n98-magerun sys:url:list --add-products 1 '{path}' > products.csv

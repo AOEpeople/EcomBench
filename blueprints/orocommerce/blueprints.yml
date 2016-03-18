@@ -1,10 +1,10 @@
 blueprints:
 
-  - stackname: 'testrun-magento-1-9-run-{tstamp}'
-    template: magento.template
+  - stackname: 'testrun-orocommerce-run-{tstamp}'
+    template: orocommerce.template
     parameters:
-      Platform: 'MagentoCe'
-      Version: '1.9.1.1'
+      Platform: 'OroCommerce'
+      Version: '1.0.0-alpha.4'
       Testrun: '{tstamp}'
       KeyPair: '{env:KeyPair}'
       VPC: '{resource:setup:VPC}'
