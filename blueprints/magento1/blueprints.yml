@@ -1,7 +1,7 @@
 blueprints:
 
   - stackname: 'testrun-magento-1-9-run-{tstamp}'
-    template: magento.template
+    template: 'magento1.template'
     parameters:
       Platform: 'MagentoCe'
       Version: '1.9.1.1'

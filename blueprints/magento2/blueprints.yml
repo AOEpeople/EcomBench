@@ -1,0 +1,19 @@
+blueprints:
+
+  - stackname: 'testrun-magento-2-run-{tstamp}'
+    template: 'magento2.template'
+    parameters:
+      Platform: 'MagentoCe'
+      Version: '1.9.1.1'
+      Testrun: '{tstamp}'
+      KeyPair: '{env:KeyPair}'
+      VPC: '{resource:setup:VPC}'
+      Subnet: '{resource:setup:Subnet}'
+      InstanceSg: '{resource:setup:InstanceSg}'
+      # This is Ubuntu 14.04 in us-west-1 (TODO: come up with mapping)
+      BootAmi: 'ami-06116566'
+      # 16.04 LTD DEVEL hvm:ebs-io1 us-west-1
+      #BootAmi: 'ami-c894e4a8'
+      MagentoRepoUsername: '{env:MagentoRepoUsername}'
+      MagentoRepoPassword: '{env:MagentoRepoPassword}'
+      GithubToken: '{env:GithubToken}'

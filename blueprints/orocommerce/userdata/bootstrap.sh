@@ -1,35 +1,6 @@
 #!/usr/bin/env bash
 
-WAIT_CONDITION_HANDLE='{Ref:InstallationDoneHandle}'
-VERSION='{Ref:Version}'
-
-echo '>>>> Installing CloudFormation tools'
-mkdir aws-cfn-bootstrap-latest || { echo "Failed creating directory" ; exit 1; }
-apt-get -y install python-setuptools || { echo "Failed installing python-setuptools" ; exit 1; }
-curl -s https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1 || { echo "Failed downloading aws-cfn-bootstrap-latest.tar.gz" ; exit 1; }
-easy_install aws-cfn-bootstrap-latest || { echo "Failed installing aws-cfn-bootstrap-latest" ; exit 1; }
-
-function error_exit { /usr/local/bin/cfn-signal --exit-code 1 --reason "$1" "${WAIT_CONDITION_HANDLE}"; exit 1; }
-
-function done_exit {
-    rv=$?
-    if [ "$rv" == "0" ] ; then
-        echo ">>> Signaling success to CloudFormation"
-        /usr/local/bin/cfn-signal --exit-code $? "${WAIT_CONDITION_HANDLE}"
-    else
-        echo ">>> Signaling failure to CloudFormation (return value: ${rv})"
-        /usr/local/bin/cfn-signal --exit-code 1 --reason "DONE_EXIT" "${WAIT_CONDITION_HANDLE}"
-    fi
-    exit $rv
-}
-trap "done_exit" EXIT
-
-# Install LAMP server
-export DEBIAN_FRONTEND=noninteractive
-apt-get update || error_exit "Error while apt-get update"
-apt-get -y install git lamp-server^ php5-mcrypt php5-curl php5-gd php5-intl || error_exit "Error installing packages"
-php5enmod mcrypt || error_exit "Error enabling mcrypt"
-a2enmod rewrite || error_exit "Error enabling mod_rewrite"
+###INCLUDE:../../_base.sh
 
 # create database
 mysql -uroot -e 'create database b2b_dev;' || error_exit "Error creating database"
@@ -37,21 +8,6 @@ mysql -uroot -e 'create database b2b_dev;' || error_exit "Error creating databas
 # install node.js
 curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash - || error_exit "Error fetching node.js"
 apt-get install -y nodejs || error_exit "Error installing node.js"
-
-# Apache configuration
-sed -i.bak 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf || error_exit "Error configuring Apache"
-
-# PHP Configuration
-sed -i "s/.*date.timezone.*/date.timezone = \"America\/Los_Angeles\"/" /etc/php5/apache2/php.ini || error_exit "Error configuring PHP (Apache)"
-sed -i "s/.*date.timezone.*/date.timezone = \"America\/Los_Angeles\"/" /etc/php5/cli/php.ini || error_exit "Error configuring PHP (cli)"
-service apache2 restart || error_exit "Error restarting Apache"
-
-# Install composer
-export COMPOSER_HOME=/usr/local/bin
-curl -sS https://getcomposer.org/installer | php || error_exit "Error installing composer"
-mv composer.phar /usr/local/bin/composer || error_exit "Error moving composer"
-
-rm -rf /var/www/html || error_exit "Error removing current webroot"
 
 # Get ORO Commerce code
 git clone https://github.com/orocommerce/orocommerce-application.git /var/www/orocommerce-application || error_exit "Error cloning oro commerce code"
@@ -109,4 +65,4 @@ php app/console oro:install \
 chmod -R ug+rw /var/www/ || error_exit "Error changing file permissions"
 chown -R www-data:www-data /var/www/ || error_exit "Error changing file ownership"
 
-ln -s /var/www/orocommerce-application/web /var/www/html || error_exit "Error linkin web root"
+ln -s /var/www/orocommerce-application/web /var/www/html || error_exit "Error linking web root"
